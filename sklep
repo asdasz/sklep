@@ -1,0 +1,405 @@
+#include <iostream>
+#include <windows.h>
+using namespace std;
+
+class Tasma;
+class Pracownik;
+class Produkt;
+class Klient;
+class Paragon;
+
+
+
+class Tasma {
+public:
+    bool czy_wlaczona = false;
+};
+
+class Pracownik {
+public:
+    void uruchom_tasme(Tasma* x);
+    void wylacz_tasme(Tasma* x);
+    void obsluz_klienta(Klient* x);
+};
+
+class Paragon {
+public:
+    void dodaj_produkt(Produkt* x);
+    void usun_produkt(Produkt* x);
+    void drukuj(Produkt* x, Produkt* y, Produkt* z);
+    void anuluj();
+
+    double suma = 0;
+};
+
+class Produkt
+{
+public:
+    string nazwa;
+    double cena;
+    Produkt();
+    Produkt(string, double);
+    ~Produkt();
+    friend ostream& operator<<(ostream& os, const Produkt& dt);
+};
+ostream& operator<<(ostream& os, const Produkt& dt)
+{
+    os << dt.cena << '\t' << dt.nazwa << endl;
+    return os;
+}
+Produkt::Produkt(string s, double t)
+{
+    nazwa = s;
+    cena = t;
+}
+Produkt::Produkt()
+{
+    nazwa = "nic";
+    cena = 0;
+}
+Produkt::~Produkt() {}
+
+
+class Klient {
+public:
+    double posiadane_pieniadze_na_karcie;
+    double posiadane_pieniadze__w_gotowce;
+    Produkt a1;
+    Produkt a2;
+    Produkt a3;
+    Klient(double, double, Produkt, Produkt, Produkt);
+    ~Klient();
+    void wybor_produktow();
+};
+Klient::Klient(double s, double ss, Produkt p, Produkt pp, Produkt ppp)
+{
+    posiadane_pieniadze_na_karcie = s;
+    posiadane_pieniadze__w_gotowce = ss;
+    a1 = p;
+    a2 = pp;
+    a3 = ppp;
+
+}
+Klient::~Klient() {}
+
+
+
+
+void Pracownik::uruchom_tasme(Tasma* x)
+{
+    x->czy_wlaczona = true;
+    cout << "Wlaczono tasme" << endl;
+}
+void Pracownik::wylacz_tasme(Tasma* x)
+{
+    x->czy_wlaczona = false;
+    cout << "Wylaczono tasme" << endl;
+}
+void Pracownik::obsluz_klienta(Klient* x)
+{
+    
+
+    Paragon* par = new Paragon; //tworzy dynamiczny paragon
+    par->dodaj_produkt(&x->a1);
+    cout << "Suma po dodaniu produktu: " << par->suma << endl;
+    par->dodaj_produkt(&x->a2);
+    cout << "Suma po dodaniu produktu: " << par->suma << endl;
+    par->dodaj_produkt(&x->a3);
+    cout << "Suma po dodaniu produktu: " << par->suma << endl;  //sumuje ceny na bierzaco
+    do
+    {
+        cout << "Czy chcesz usunac ktorys produkt?" << endl << "Jesli tak kliknij nr produktu, jesli nie kliknij 0" << endl << "jesli natomiast chcesz anulowac zakupy wcisnij 4";
+        int zzz;
+        cin >> zzz; //mozliwosc usuwania produktu
+
+        if (zzz == 1)
+        {
+            par->usun_produkt(&x->a1);
+            cout << par->suma << endl;
+        }
+        else if (zzz == 2)
+        {
+            par->usun_produkt(&x->a2);
+            cout << par->suma << endl;
+        }
+        else if (zzz == 3)
+        {
+            par->usun_produkt(&x->a3);
+            cout << par->suma << endl;
+        }
+        else if (zzz == 4)
+        {
+            par->anuluj();
+            break;
+        }
+
+        cout << "Wybor platnosci:" << endl << "1: karta" << endl << "2: gotowka" << endl;  //porownanie czy osobe stac
+        int wyb; cin >> wyb;
+        double ppnk = x->posiadane_pieniadze_na_karcie;
+        double ppwg = x->posiadane_pieniadze__w_gotowce;
+        if (wyb == 1 && ppnk >= par->suma)
+        {
+            ppnk -= par->suma;
+            x->posiadane_pieniadze_na_karcie = ppnk;
+
+            par->drukuj(&x->a1, &x->a2, &x->a3);
+            break;
+        }
+        else if (wyb == 2 && ppwg >= par->suma)
+        {
+            ppwg -= par->suma;
+            x->posiadane_pieniadze__w_gotowce = ppnk;
+
+            par->drukuj(&x->a1, &x->a2, &x->a3);
+            break;
+        }
+        else if (wyb == 1 && ppnk < par->suma)
+        {
+            cout << "Brak wystarczajacej kwoty" << endl;
+        }
+        else if (wyb == 2 && ppwg < par->suma)
+        {
+            cout << "Brak wystarczajacej kwoty" << endl;
+        }
+    } while (true); //az do anulowania paragonu lub zakupu
+
+}
+
+void Paragon::dodaj_produkt(Produkt* x)
+{
+    suma += x->cena;
+}
+void Paragon::usun_produkt(Produkt* x)
+{
+    suma -= x->cena;
+    x->cena = 0;
+    x->nazwa = "nic";
+}
+void Paragon::anuluj()
+{
+    suma = 0;
+}
+void Paragon::drukuj(Produkt* x, Produkt* y, Produkt* z)
+{
+    cout << "---------------------------------------" << endl;
+    if (x->cena != 0)
+        cout << x->nazwa << "\n\t\t\t\t" << x->cena << " PLN" << endl;
+    if (y->cena != 0)
+        cout << y->nazwa << "\n\t\t\t\t" << y->cena << " PLN" << endl;
+    if (z->cena != 0)
+        cout << z->nazwa << "\n\t\t\t\t" << z->cena << " PLN" << endl;
+    cout << "\t\t\t" << "suma: " << suma << " PLN" << endl;
+    cout << "---------------------------------------" << endl;
+    Sleep(10000);
+    system("cls");
+}
+
+void Klient::wybor_produktow()
+{
+    
+}
+
+
+
+int main()
+{
+    Pracownik prac;
+    Tasma tas;
+    Paragon p1, p2, p3;
+
+
+    Produkt pr1("chleb", 5);
+    Produkt pr2("pomidor", 1.5);
+    Produkt pr3("maslo", 6);
+    Produkt pr4("mleko", 3.2);
+    Produkt pr5("sok pomaranczowy", 4.99);
+    Produkt pr6("szynka", 8.99);
+    Produkt pr7("jablka", 5.55);
+    Produkt pr8("jajka", 7);
+    Produkt pr9("czekolada", 3.99);
+    Klient k1(200, 200, pr1, pr2, pr3);
+    Klient k2(200, 100, pr4, pr5, pr6);
+    Klient k3(100, 100, pr7, pr8, pr9);
+
+    prac.uruchom_tasme(&tas);
+
+    string login = "admin", haslo = "admin";
+    string l, h;
+    
+    while (true) //logowanie
+    {
+        cout << "LOGOWANIE" << endl << "Podaj login i haslo: ";
+        cin >> l >> h;
+        if (l == login && h == haslo) {
+            cout << "ZALOGOWANO" << endl;
+            break;
+        }
+    }
+    int wybor;
+
+    do
+    {
+        int v;
+
+
+
+        cout << "Co jako pracownik chcesz zrobic?" << endl << "0: wylacz tasme (zakoncz program)" << endl << "1: Obsluz klienta nr 1" << endl << "2: Obsluz klienta nr 2" << endl << "3: Obsluz klienta nr 3" << endl;
+        cin >> wybor;
+        system("cls");
+        switch (wybor)
+        {
+        case 0: prac.wylacz_tasme(&tas);            break; //konczy program
+        case 1:     cout << pr1 << pr2 << pr3 << pr4 << pr5 << pr6 << pr7 << pr8 << pr9 << endl;  //wypis menu
+                    cout << "Wybierz 3 produkty: " << endl;   //wybor
+                                       
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k1.a1 = pr1; break;
+                    case 2: k1.a1 = pr2; break;
+                    case 3: k1.a1 = pr3; break;
+                    case 4: k1.a1 = pr4; break;
+                    case 5: k1.a1 = pr5; break;
+                    case 6: k1.a1 = pr6; break;
+                    case 7: k1.a1 = pr7; break;
+                    case 8: k1.a1 = pr8; break;
+                    case 9: k1.a1 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k1.a2 = pr1; break;
+                    case 2: k1.a2 = pr2; break;
+                    case 3: k1.a2 = pr3; break;
+                    case 4: k1.a2 = pr4; break;
+                    case 5: k1.a2 = pr5; break;
+                    case 6: k1.a2 = pr6; break;
+                    case 7: k1.a2 = pr7; break;
+                    case 8: k1.a2 = pr8; break;
+                    case 9: k1.a2 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k1.a3 = pr1; break;
+                    case 2: k1.a3 = pr2; break;
+                    case 3: k1.a3 = pr3; break;
+                    case 4: k1.a3 = pr4; break;
+                    case 5: k1.a3 = pr5; break;
+                    case 6: k1.a3 = pr6; break;
+                    case 7: k1.a3 = pr7; break;
+                    case 8: k1.a3 = pr8; break;
+                    case 9: k1.a3 = pr9; break;
+                    default:
+                        break;
+                    }
+                prac.obsluz_klienta(&k1);           break;
+        case 2:     cout << pr1 << pr2 << pr3 << pr4 << pr5 << pr6 << pr7 << pr8 << pr9 << endl;
+                    cout << "Wybierz 3 produkty: " << endl;                    
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k2.a1 = pr1; break;
+                    case 2: k2.a1 = pr2; break;
+                    case 3: k2.a1 = pr3; break;
+                    case 4: k2.a1 = pr4; break;
+                    case 5: k2.a1 = pr5; break;
+                    case 6: k2.a1 = pr6; break;
+                    case 7: k2.a1 = pr7; break;
+                    case 8: k2.a1 = pr8; break;
+                    case 9: k2.a1 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k2.a2 = pr1; break;
+                    case 2: k2.a2 = pr2; break;
+                    case 3: k2.a2 = pr3; break;
+                    case 4: k2.a2 = pr4; break;
+                    case 5: k2.a2 = pr5; break;
+                    case 6: k2.a2 = pr6; break;
+                    case 7: k2.a2 = pr7; break;
+                    case 8: k2.a2 = pr8; break;
+                    case 9: k2.a2 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k2.a3 = pr1; break;
+                    case 2: k2.a3 = pr2; break;
+                    case 3: k2.a3 = pr3; break;
+                    case 4: k2.a3 = pr4; break;
+                    case 5: k2.a3 = pr5; break;
+                    case 6: k2.a3 = pr6; break;
+                    case 7: k2.a3 = pr7; break;
+                    case 8: k2.a3 = pr8; break;
+                    case 9: k2.a3 = pr9; break;
+                    default:
+                        break;
+                    }
+                    prac.obsluz_klienta(&k2);           break;
+        case 3:     cout << pr1 << pr2 << pr3 << pr4 << pr5 << pr6 << pr7 << pr8 << pr9 << endl;
+                    cout << "Wybierz 3 produkty: " << endl;
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k3.a1 = pr1; break;
+                    case 2: k3.a1 = pr2; break;
+                    case 3: k3.a1 = pr3; break;
+                    case 4: k3.a1 = pr4; break;
+                    case 5: k3.a1 = pr5; break;
+                    case 6: k3.a1 = pr6; break;
+                    case 7: k3.a1 = pr7; break;
+                    case 8: k3.a1 = pr8; break;
+                    case 9: k3.a1 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k3.a2 = pr1; break;
+                    case 2: k3.a2 = pr2; break;
+                    case 3: k3.a2 = pr3; break;
+                    case 4: k3.a2 = pr4; break;
+                    case 5: k3.a2 = pr5; break;
+                    case 6: k3.a2 = pr6; break;
+                    case 7: k3.a2 = pr7; break;
+                    case 8: k3.a2 = pr8; break;
+                    case 9: k3.a2 = pr9; break;
+                    default:
+                        break;
+                    }
+                    cin >> v;
+                    switch (v)
+                    {
+                    case 1: k3.a3 = pr1; break;
+                    case 2: k3.a3 = pr2; break;
+                    case 3: k3.a3 = pr3; break;
+                    case 4: k3.a3 = pr4; break;
+                    case 5: k3.a3 = pr5; break;
+                    case 6: k3.a3 = pr6; break;
+                    case 7: k3.a3 = pr7; break;
+                    case 8: k3.a3 = pr8; break;
+                    case 9: k3.a3 = pr9; break;
+                    default:
+                        break;
+                    }
+                    prac.obsluz_klienta(&k3);           break;
+        default: break;
+        }
+
+    } while (wybor);
+
+
+
+    return 0;
+}
